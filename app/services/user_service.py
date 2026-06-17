@@ -3,6 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from app.extensions import bcrypt, db
 from app.models import RolNombre, Usuario
 from app.repositories import RolRepository, UsuarioRepository
+from app.services.audit_service import AuditService
 
 
 class UserService:
@@ -13,6 +14,7 @@ class UserService:
     ) -> None:
         self.user_repository = user_repository or UsuarioRepository()
         self.role_repository = role_repository or RolRepository()
+        self.audit_service = AuditService()
 
     def list_users(self) -> list[Usuario]:
         return self.user_repository.list_all()
@@ -45,7 +47,14 @@ class UserService:
             activo=active,
         )
         try:
-            return self.user_repository.add(user)
+            user = self.user_repository.add(user)
+            self.audit_service.log_action(
+                accion="creación de usuario",
+                tabla_afectada="usuarios",
+                registro_id=user.id,
+                detalle=f"Usuario {user.usuario} creado con rol {role.nombre.value}"
+            )
+            return user
         except IntegrityError as exc:
             db.session.rollback()
             raise ValueError("No se pudo crear el usuario.") from exc
@@ -76,6 +85,12 @@ class UserService:
 
         try:
             self.user_repository.save()
+            self.audit_service.log_action(
+                accion="edición de usuario",
+                tabla_afectada="usuarios",
+                registro_id=user.id,
+                detalle=f"Usuario {user.usuario} editado"
+            )
             return user
         except IntegrityError as exc:
             db.session.rollback()

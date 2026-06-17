@@ -11,9 +11,9 @@ from wtforms import (
     SubmitField,
     TextAreaField,
 )
-from wtforms.validators import DataRequired, Length, NumberRange, Optional
+from wtforms.validators import DataRequired, Length, NumberRange, Optional, Regexp
 
-from app.models import CanalPedido, EstadoPedido, ProductoTipo, RolNombre
+from app.models import CanalPedido, EstadoPedido, ProductoTipo, RolNombre, UnidadMedida, MotivoMovimiento, TipoMovimiento, MetodoPago
 
 
 class UsuarioForm(FlaskForm):
@@ -27,7 +27,11 @@ class UsuarioForm(FlaskForm):
     )
     password = PasswordField(
         "Contraseña",
-        validators=[Optional(), Length(min=8, max=128)],
+        validators=[
+            Optional(), 
+            Length(min=8, max=128, message="La contraseña debe tener al menos 8 caracteres."),
+            Regexp(r'^(?=.*[0-9])(?=.*[A-Z]).*$', message="La contraseña debe contener al menos un número y una letra mayúscula.")
+        ],
     )
     rol = SelectField(
         "Rol",
@@ -147,3 +151,53 @@ class VentaForm(FlaskForm):
         default=Decimal("0.00"),
     )
     submit = SubmitField("Generar venta")
+
+class IngredienteForm(FlaskForm):
+    nombre = StringField("Nombre", validators=[DataRequired(), Length(min=2, max=100)])
+    unidad_medida = SelectField(
+        "Unidad de Medida",
+        validators=[DataRequired()],
+        choices=[(u.value, u.value.upper()) for u in UnidadMedida],
+    )
+    stock_actual = DecimalField("Stock Actual", validators=[DataRequired(), NumberRange(min=Decimal("0.00"))], places=3, default=Decimal("0.000"))
+    stock_minimo = DecimalField("Stock Mínimo", validators=[DataRequired(), NumberRange(min=Decimal("0.00"))], places=3, default=Decimal("0.000"))
+    activo = BooleanField("Activo", default=True)
+    submit = SubmitField("Guardar")
+
+class RecetaForm(FlaskForm):
+    ingrediente_id = SelectField("Ingrediente", validators=[DataRequired()], coerce=int)
+    cantidad = DecimalField("Cantidad", validators=[DataRequired(), NumberRange(min=Decimal("0.001"))], places=3)
+    submit = SubmitField("Agregar")
+
+class MovimientoInventarioForm(FlaskForm):
+    ingrediente_id = SelectField("Ingrediente", validators=[DataRequired()], coerce=int)
+    tipo = SelectField(
+        "Tipo",
+        validators=[DataRequired()],
+        choices=[(t.value, t.value.title()) for t in TipoMovimiento],
+    )
+    motivo = SelectField(
+        "Motivo",
+        validators=[DataRequired()],
+        choices=[(m.value, m.value.replace("_", " ").title()) for m in MotivoMovimiento],
+    )
+    cantidad = DecimalField("Cantidad", validators=[DataRequired(), NumberRange(min=Decimal("0.001"))], places=3)
+    submit = SubmitField("Registrar Movimiento")
+
+class PagoForm(FlaskForm):
+    metodo = SelectField(
+        "Método de Pago",
+        validators=[DataRequired()],
+        choices=[(m.value, m.value.title()) for m in MetodoPago],
+    )
+    monto = DecimalField("Monto", validators=[DataRequired(), NumberRange(min=Decimal("0.01"))], places=2)
+    referencia = StringField("Referencia", validators=[Optional(), Length(max=100)])
+    submit = SubmitField("Registrar Pago")
+
+class CajaAperturaForm(FlaskForm):
+    monto_apertura = DecimalField("Monto Inicial", validators=[DataRequired(), NumberRange(min=Decimal("0.00"))], places=2, default=Decimal("0.00"))
+    submit = SubmitField("Abrir Caja")
+
+class CajaCierreForm(FlaskForm):
+    monto_real = DecimalField("Monto en Efectivo", validators=[DataRequired(), NumberRange(min=Decimal("0.00"))], places=2)
+    submit = SubmitField("Cerrar Caja")

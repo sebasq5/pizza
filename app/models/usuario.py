@@ -44,7 +44,8 @@ class Usuario(UserMixin, db.Model):
         back_populates="repartidor",
     )
     ventas_registradas = relationship("Venta", back_populates="vendedor")
-
+    pagos_registrados = relationship("Pago", back_populates="responsable")
+    movimientos_inventario = relationship("MovimientoInventario", back_populates="responsable")
     def get_id(self) -> str:
         return str(self.id)
 

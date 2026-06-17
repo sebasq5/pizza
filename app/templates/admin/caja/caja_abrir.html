@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Abrir Caja</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('admin.list_cajas') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a cajas
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow border-0">
+            <div class="card-body p-4">
+                <h4 class="card-title text-center mb-4">Monto Inicial de Caja</h4>
+                
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.monto_apertura.label(class="form-label fw-bold") }}
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            {{ form.monto_apertura(class="form-control form-control-lg" + (" is-invalid" if form.monto_apertura.errors else ""), placeholder="0.00") }}
+                            {% for error in form.monto_apertura.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="form-text">Ingrese el monto total en efectivo con el que abre la caja.</div>
+                    </div>
+                    
+                    <div class="d-grid mt-4">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -21,6 +21,8 @@
           <th>Impuesto</th>
           <th>Descuento</th>
           <th>Total</th>
+          <th>Estado</th>
+          <th>Pagos</th>
         </tr>
       </thead>
       <tbody>
@@ -33,10 +35,24 @@
             <td>${{ '%.2f'|format(sale.impuesto) }}</td>
             <td>${{ '%.2f'|format(sale.descuento) }}</td>
             <td>${{ '%.2f'|format(sale.total) }}</td>
+            <td>
+              {% if sale.estado.value == 'pagada' %}
+              <span class="badge bg-success">Pagada</span>
+              {% elif sale.estado.value == 'anulada' %}
+              <span class="badge bg-danger">Anulada</span>
+              {% else %}
+              <span class="badge bg-warning text-dark">Registrada</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('admin.register_pago', venta_id=sale.pedido_id) }}" class="btn btn-sm btn-outline-primary">
+                Pagos
+              </a>
+            </td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="7" class="text-center text-muted py-4">Aun no hay ventas generadas.</td>
+            <td colspan="9" class="text-center text-muted py-4">Aun no hay ventas generadas.</td>
           </tr>
         {% endfor %}
       </tbody>

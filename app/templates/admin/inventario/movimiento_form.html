@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Movimiento{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h4 class="mb-0">Registrar Movimiento</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.ingrediente_id.label(class="form-label") }}
+                        {{ form.ingrediente_id(class="form-select" + (" is-invalid" if form.ingrediente_id.errors else "")) }}
+                        {% for error in form.ingrediente_id.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.tipo.label(class="form-label") }}
+                            {{ form.tipo(class="form-select" + (" is-invalid" if form.tipo.errors else "")) }}
+                            {% for error in form.tipo.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.motivo.label(class="form-label") }}
+                            {{ form.motivo(class="form-select" + (" is-invalid" if form.motivo.errors else "")) }}
+                            {% for error in form.motivo.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form.cantidad.label(class="form-label") }}
+                        {{ form.cantidad(class="form-control" + (" is-invalid" if form.cantidad.errors else "")) }}
+                        <div class="form-text">Cantidad en la unidad de medida del ingrediente.</div>
+                        {% for error in form.cantidad.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.list_movimientos') }}" class="btn btn-outline-secondary">Cancelar</a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

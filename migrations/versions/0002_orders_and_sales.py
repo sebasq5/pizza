@@ -42,9 +42,6 @@ estado_venta_enum = sa.Enum(
 
 def upgrade():
     bind = op.get_bind()
-    canal_pedido_enum.create(bind, checkfirst=True)
-    estado_pedido_enum.create(bind, checkfirst=True)
-    estado_venta_enum.create(bind, checkfirst=True)
 
     op.create_table(
         "pedidos",

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Ingredientes{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Ingredientes</h2>
+    <a href="{{ url_for('admin.create_ingrediente') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nuevo Ingrediente
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Unidad</th>
+                        <th>Stock Actual</th>
+                        <th>Stock Mínimo</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in ingredientes %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.nombre }}</td>
+                        <td>{{ item.unidad_medida.value }}</td>
+                        <td>
+                            {% if item.stock_actual <= item.stock_minimo %}
+                                <span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle"></i> {{ item.stock_actual }}</span>
+                            {% else %}
+                                {{ item.stock_actual }}
+                            {% endif %}
+                        </td>
+                        <td>{{ item.stock_minimo }}</td>
+                        <td>
+                            {% if item.activo %}
+                            <span class="badge bg-success">Activo</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No hay ingredientes registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

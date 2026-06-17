@@ -20,6 +20,9 @@ class VentaRepository:
     def get_by_order_id(self, order_id: int) -> Venta | None:
         return db.session.scalar(select(Venta).where(Venta.pedido_id == order_id))
 
+    def get_by_id(self, venta_id: int) -> Venta | None:
+        return db.session.get(Venta, venta_id)
+
     def add(self, sale: Venta) -> Venta:
         db.session.add(sale)
         db.session.commit()

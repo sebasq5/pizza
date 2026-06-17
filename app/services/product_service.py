@@ -7,9 +7,13 @@ from app.models import Producto, ProductoTipo
 from app.repositories import ProductoRepository
 
 
+from app.repositories import ProductoRepository
+from app.services.audit_service import AuditService
+
 class ProductService:
     def __init__(self, product_repository: ProductoRepository | None = None) -> None:
         self.product_repository = product_repository or ProductoRepository()
+        self.audit_service = AuditService()
 
     def list_products(self) -> list[Producto]:
         return self.product_repository.list_all()
@@ -33,7 +37,14 @@ class ProductService:
             es_personalizable=customizable,
         )
         try:
-            return self.product_repository.add(product)
+            product = self.product_repository.add(product)
+            self.audit_service.log_action(
+                accion="creación producto",
+                tabla_afectada="productos",
+                registro_id=product.id,
+                detalle=f"Producto {product.nombre} creado a ${product.precio}"
+            )
+            return product
         except IntegrityError as exc:
             db.session.rollback()
             raise ValueError("No se pudo crear el producto.") from exc
@@ -47,6 +58,7 @@ class ProductService:
         available: bool,
         customizable: bool,
     ) -> Producto:
+        precio_anterior = product.precio
         product.nombre = name.strip()
         product.tipo = ProductoTipo(product_type)
         product.precio = price
@@ -54,6 +66,13 @@ class ProductService:
         product.es_personalizable = customizable
         try:
             self.product_repository.save()
+            if precio_anterior != price:
+                self.audit_service.log_action(
+                    accion="cambio precio",
+                    tabla_afectada="productos",
+                    registro_id=product.id,
+                    detalle=f"Precio cambiado de ${precio_anterior} a ${price}"
+                )
             return product
         except IntegrityError as exc:
             db.session.rollback()

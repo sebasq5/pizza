@@ -19,6 +19,7 @@ from app.repositories import (
     ProductoRepository,
     UsuarioRepository,
 )
+from app.services.audit_service import AuditService
 
 
 TWO_PLACES = Decimal("0.01")
@@ -38,6 +39,7 @@ class OrderService:
         self.product_repository = product_repository or ProductoRepository()
         self.item_repository = item_repository or DetallePedidoRepository()
         self.user_repository = user_repository or UsuarioRepository()
+        self.audit_service = AuditService()
 
     def list_orders_for_user(self, user: Usuario) -> list[Pedido]:
         if user.role_name == RolNombre.repartidor.value:
@@ -96,7 +98,15 @@ class OrderService:
             creador=creator,
         )
         try:
-            return self.order_repository.add(order)
+            order = self.order_repository.add(order)
+            self.audit_service.log_action(
+                usuario_id=creator.id,
+                accion="creación pedido",
+                tabla_afectada="pedidos",
+                registro_id=order.id,
+                detalle=f"Pedido {order.numero} creado para cliente #{customer_id}"
+            )
+            return order
         except IntegrityError as exc:
             db.session.rollback()
             raise ValueError("No se pudo crear el pedido.") from exc
@@ -204,6 +214,13 @@ class OrderService:
         order.estado = target_status
         try:
             self.order_repository.save()
+            self.audit_service.log_action(
+                usuario_id=actor.id,
+                accion="cambio estado pedido",
+                tabla_afectada="pedidos",
+                registro_id=order.id,
+                detalle=f"Pedido {order.numero} paso a {target_status.value}"
+            )
             return order
         except IntegrityError as exc:
             db.session.rollback()

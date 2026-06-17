@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Cerrar Caja</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('admin.list_cajas') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a cajas
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow border-0">
+            <div class="card-body p-4">
+                <h4 class="card-title text-center mb-4">Declaración de Efectivo</h4>
+                
+                <div class="mb-4">
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Monto Apertura
+                            <span class="fw-bold">${{ active_box.monto_apertura }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center text-success">
+                            Ventas en Efectivo
+                            <span class="fw-bold">+ ${{ totales.total_efectivo }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center text-primary">
+                            Ventas en Tarjeta
+                            <span>${{ totales.total_tarjetas }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center text-info">
+                            Ventas por Transferencia
+                            <span>${{ totales.total_transferencias }}</span>
+                        </li>
+                    </ul>
+                    <div class="alert alert-warning text-center fw-bold fs-5 mb-0">
+                        Total Esperado en Caja: ${{ totales.monto_esperado }}
+                    </div>
+                </div>
+
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.monto_real.label(class="form-label fw-bold") }}
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            {{ form.monto_real(class="form-control form-control-lg" + (" is-invalid" if form.monto_real.errors else ""), placeholder="0.00") }}
+                            {% for error in form.monto_real.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="form-text text-danger fw-bold">Ingrese el monto real que tiene físicamente en la caja (billetes y monedas).</div>
+                    </div>
+                    
+                    <div class="d-grid mt-4">
+                        {{ form.submit(class="btn btn-danger btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

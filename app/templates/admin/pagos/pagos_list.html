@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Pagos Registrados{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Pagos Registrados</h2>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Venta (Pedido #)</th>
+                        <th>Método</th>
+                        <th>Monto</th>
+                        <th>Referencia</th>
+                        <th>Cajero</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pago in pagos %}
+                    <tr>
+                        <td>{{ pago.fecha.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>Venta #{{ pago.venta_id }} (Pedido {{ pago.venta.pedido.numero }})</td>
+                        <td>
+                            {% if pago.metodo.value == 'efectivo' %}
+                            <span class="badge bg-success"><i class="bi bi-cash"></i> Efectivo</span>
+                            {% elif pago.metodo.value == 'transferencia' %}
+                            <span class="badge bg-info text-dark"><i class="bi bi-bank"></i> Transferencia</span>
+                            {% else %}
+                            <span class="badge bg-primary"><i class="bi bi-credit-card"></i> Tarjeta</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold">${{ "%.2f"|format(pago.monto) }}</td>
+                        <td>{{ pago.referencia or '-' }}</td>
+                        <td>{{ pago.responsable.nombre }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No hay pagos registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

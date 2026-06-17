@@ -7,6 +7,7 @@ from app.cli import register_cli_commands
 from app.config import config_by_name
 from app.extensions import bcrypt, csrf, db, login_manager, migrate
 from app.main import main_bp
+from app import models
 from app.models import Usuario
 from app.security import configure_security_headers
 

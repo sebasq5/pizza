@@ -14,7 +14,13 @@ def index():
 @main_bp.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("main/dashboard.html")
+    metrics = {}
+    if current_user.role_name == "administrador":
+        from app.services.report_service import ReportService
+        report_service = ReportService()
+        metrics = report_service.get_dashboard_metrics()
+        
+    return render_template("main/dashboard.html", metrics=metrics)
 
 
 @main_bp.route("/healthz")

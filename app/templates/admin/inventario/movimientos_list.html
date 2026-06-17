@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Movimientos de Inventario{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Movimientos de Inventario</h2>
+    <a href="{{ url_for('admin.create_movimiento') }}" class="btn btn-primary">
+        <i class="bi bi-arrow-left-right"></i> Registrar Movimiento
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Ingrediente</th>
+                        <th>Tipo</th>
+                        <th>Cantidad</th>
+                        <th>Motivo</th>
+                        <th>Responsable</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mov in movimientos %}
+                    <tr>
+                        <td>{{ mov.fecha.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ mov.ingrediente.nombre }} ({{ mov.ingrediente.unidad_medida.value }})</td>
+                        <td>
+                            {% if mov.tipo.value == 'entrada' %}
+                            <span class="badge bg-success"><i class="bi bi-arrow-down-circle"></i> Entrada</span>
+                            {% elif mov.tipo.value == 'salida' %}
+                            <span class="badge bg-danger"><i class="bi bi-arrow-up-circle"></i> Salida</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark"><i class="bi bi-arrow-left-right"></i> Ajuste</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold">{{ mov.cantidad }}</td>
+                        <td>{{ mov.motivo.value.replace('_', ' ').title() }}</td>
+                        <td>{{ mov.responsable.nombre }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No hay movimientos registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

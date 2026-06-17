@@ -31,7 +31,26 @@
             <a class="btn btn-sm btn-outline-light" href="{{ url_for('admin.list_customers') }}">Clientes</a>
             <a class="btn btn-sm btn-outline-light" href="{{ url_for('admin.list_orders') }}">Pedidos</a>
             <a class="btn btn-sm btn-outline-light" href="{{ url_for('admin.list_sales') }}">Ventas</a>
-          {% elif current_user.role_name == 'cocina' %}
+          {% endif %}
+          
+          {% if current_user.role_name == 'administrador' %}
+            <a class="btn btn-sm btn-outline-warning" href="{{ url_for('admin.index') }}">Reportes</a>
+            <a class="btn btn-sm btn-outline-warning" href="{{ url_for('admin.list_auditoria') }}">Auditoría</a>
+            <a class="btn btn-sm btn-outline-warning" href="{{ url_for('admin.list_users') }}">Usuarios</a>
+          {% endif %}
+          
+          {% if current_user.role_name in ['administrador', 'bodeguero'] %}
+            <a class="btn btn-sm btn-outline-light" href="{{ url_for('admin.list_ingredientes') }}">Ingredientes</a>
+            <a class="btn btn-sm btn-outline-light" href="{{ url_for('admin.list_movimientos') }}">Movimientos</a>
+            <a class="btn btn-sm btn-outline-light" href="{{ url_for('admin.list_products') }}">Productos</a>
+          {% endif %}
+          
+          {% if current_user.role_name in ['administrador', 'cajero'] %}
+            <a class="btn btn-sm btn-outline-light" href="{{ url_for('admin.list_pagos') }}">Pagos</a>
+            <a class="btn btn-sm btn-outline-light" href="{{ url_for('admin.list_cajas') }}">Caja</a>
+          {% endif %}
+          
+          {% if current_user.role_name == 'cocina' %}
             <a class="btn btn-sm btn-outline-light" href="{{ url_for('admin.list_orders') }}">Pedidos</a>
           {% elif current_user.role_name == 'repartidor' %}
             <a class="btn btn-sm btn-outline-light" href="{{ url_for('admin.list_orders') }}">Mis pedidos</a>

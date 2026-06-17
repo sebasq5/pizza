@@ -6,6 +6,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from app.auth import auth_bp
 from app.auth.forms import LoginForm
 from app.services import AuthService
+from app.services.audit_service import AuditService
 
 
 def _is_safe_redirect_target(target: str | None) -> bool:
@@ -30,6 +31,14 @@ def login():
             return render_template("auth/login.html", form=form), 401
 
         login_user(user, remember=form.remember_me.data)
+        
+        audit_service = AuditService()
+        audit_service.log_action(
+            usuario_id=user.id,
+            accion="login",
+            detalle="Inicio de sesión exitoso"
+        )
+        
         next_url = request.args.get("next")
         flash("Sesión iniciada correctamente.", "success")
         if _is_safe_redirect_target(next_url):
@@ -42,6 +51,15 @@ def login():
 @auth_bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
+    audit_service = AuditService()
+    audit_service.log_action(
+        usuario_id=current_user.id,
+        accion="logout",
+        detalle="Cierre de sesión"
+    )
+    
     logout_user()
+    from flask import session
+    session.clear()
     flash("Sesión cerrada correctamente.", "info")
     return redirect(url_for("auth.login"))

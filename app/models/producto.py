@@ -46,3 +46,4 @@ class Producto(db.Model):
     )
 
     detalles_pedido = relationship("DetallePedido", back_populates="producto")
+    recetas = relationship("Receta", back_populates="producto", cascade="all, delete-orphan")

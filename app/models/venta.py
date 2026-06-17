@@ -59,3 +59,4 @@ class Venta(db.Model):
 
     pedido = relationship("Pedido", back_populates="venta")
     vendedor = relationship("Usuario", back_populates="ventas_registradas")
+    pagos = relationship("Pago", back_populates="venta", cascade="all, delete-orphan")

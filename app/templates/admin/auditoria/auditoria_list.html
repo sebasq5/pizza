@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Auditoría del Sistema</h1>
+</div>
+
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-body bg-light">
+        <form method="GET" action="{{ url_for('admin.list_auditoria') }}" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="fecha" class="form-label fw-bold">Fecha:</label>
+                <input type="date" id="fecha" name="fecha" class="form-control" value="{{ selected_date }}">
+            </div>
+            <div class="col-md-3">
+                <label for="accion" class="form-label fw-bold">Acción:</label>
+                <input type="text" id="accion" name="accion" class="form-control" placeholder="Ej. login, creación" value="{{ selected_accion }}">
+            </div>
+            <div class="col-md-3">
+                <label for="tabla" class="form-label fw-bold">Tabla afectada:</label>
+                <input type="text" id="tabla" name="tabla" class="form-control" placeholder="Ej. usuarios, pedidos" value="{{ selected_tabla }}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle table-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Fecha/Hora</th>
+                <th>Usuario</th>
+                <th>Acción</th>
+                <th>Tabla</th>
+                <th>Reg. ID</th>
+                <th>Detalle</th>
+                <th>IP Origen</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reg in registros %}
+            <tr>
+                <td>{{ reg.id }}</td>
+                <td>{{ reg.fecha.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td>{{ reg.usuario.nombre if reg.usuario else 'Sistema' }}</td>
+                <td><span class="badge bg-info text-dark">{{ reg.accion }}</span></td>
+                <td>{{ reg.tabla_afectada or '-' }}</td>
+                <td>{{ reg.registro_id or '-' }}</td>
+                <td>{{ reg.detalle or '-' }}</td>
+                <td><small class="text-muted">{{ reg.ip_origen or '-' }}</small></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center text-muted py-4">No se encontraron registros de auditoría.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
