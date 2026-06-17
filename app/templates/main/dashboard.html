@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-12">
+    <div class="p-4 bg-white border rounded-3 shadow-sm">
+      <h1 class="h3">Dashboard</h1>
+      <p class="text-muted mb-0">
+        Primer 20% funcional: autenticación, roles, usuarios, productos e infraestructura segura.
+      </p>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <h2 class="h5">Accesos disponibles</h2>
+        <ul class="mb-0">
+          <li>Login y logout con sesión segura.</li>
+          <li>Control por rol a nivel servidor.</li>
+          <li>CRUD de usuarios para administrador.</li>
+          <li>CRUD de productos para administrador.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <h2 class="h5">Atajos</h2>
+        {% if current_user.role_name == 'administrador' %}
+          <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-dark" href="{{ url_for('admin.list_users') }}">Gestionar usuarios</a>
+            <a class="btn btn-outline-dark" href="{{ url_for('admin.list_products') }}">Gestionar productos</a>
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">Tu rol no tiene acceso a administración en este sprint.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

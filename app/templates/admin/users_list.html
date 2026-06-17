@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Usuarios{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Usuarios</h1>
+    <p class="text-muted mb-0">Administración de cuentas y roles.</p>
+  </div>
+  <a class="btn btn-dark" href="{{ url_for('admin.create_user') }}">Nuevo usuario</a>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Nombre</th>
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Creado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+          <tr>
+            <td>{{ user.nombre }}</td>
+            <td>{{ user.usuario }}</td>
+            <td>{{ user.role_name }}</td>
+            <td>
+              <span class="badge text-bg-{{ 'success' if user.activo else 'secondary' }}">
+                {{ 'Activo' if user.activo else 'Inactivo' }}
+              </span>
+            </td>
+            <td>{{ user.fecha_creacion.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td class="text-end">
+              <div class="d-inline-flex gap-2">
+                <a class="btn btn-sm btn-outline-dark" href="{{ url_for('admin.edit_user', user_id=user.id) }}">Editar</a>
+                <form method="post" action="{{ url_for('admin.delete_user', user_id=user.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">No hay usuarios registrados.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

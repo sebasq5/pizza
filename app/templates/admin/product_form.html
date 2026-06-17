@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h1 class="h3 mb-4">{{ page_title }}</h1>
+        <form method="post" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="mb-3">
+            {{ form.nombre.label(class="form-label") }}
+            {{ form.nombre(class="form-control") }}
+            {% for error in form.nombre.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            {{ form.tipo.label(class="form-label") }}
+            {{ form.tipo(class="form-select") }}
+            {% for error in form.tipo.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            {{ form.precio.label(class="form-label") }}
+            {{ form.precio(class="form-control", min="0", step="0.01") }}
+            {% for error in form.precio.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="form-check mb-2">
+            {{ form.disponible(class="form-check-input") }}
+            {{ form.disponible.label(class="form-check-label") }}
+          </div>
+          <div class="form-check mb-4">
+            {{ form.es_personalizable(class="form-check-input") }}
+            {{ form.es_personalizable.label(class="form-check-label") }}
+          </div>
+          <div class="d-flex gap-2">
+            {{ form.submit(class="btn btn-dark", value=submit_label) }}
+            <a class="btn btn-outline-secondary" href="{{ url_for('admin.list_products') }}">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Ventas{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Ventas</h1>
+    <p class="text-muted mb-0">Ventas generadas desde pedidos registrados.</p>
+  </div>
+  <a class="btn btn-outline-secondary" href="{{ url_for('admin.list_orders') }}">Ver pedidos</a>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Pedido</th>
+          <th>Cliente</th>
+          <th>Vendedor</th>
+          <th>Subtotal</th>
+          <th>Impuesto</th>
+          <th>Descuento</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sale in sales %}
+          <tr>
+            <td><a href="{{ url_for('admin.order_detail', order_id=sale.pedido.id) }}">{{ sale.pedido.numero }}</a></td>
+            <td>{{ sale.pedido.cliente.nombre }}</td>
+            <td>{{ sale.vendedor.nombre }}</td>
+            <td>${{ '%.2f'|format(sale.subtotal) }}</td>
+            <td>${{ '%.2f'|format(sale.impuesto) }}</td>
+            <td>${{ '%.2f'|format(sale.descuento) }}</td>
+            <td>${{ '%.2f'|format(sale.total) }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">Aun no hay ventas generadas.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

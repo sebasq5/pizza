@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Detalle pedido{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+  <div>
+    <h1 class="h3 mb-1">Pedido {{ order.numero }}</h1>
+    <p class="text-muted mb-0">{{ order.cliente.nombre }} - {{ order.canal.value }} - {{ order.estado.value }}</p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap justify-content-end">
+    {% if current_user.role_name in ['administrador', 'vendedor'] %}
+      <a class="btn btn-outline-dark" href="{{ url_for('admin.edit_order', order_id=order.id) }}">Editar pedido</a>
+      {% if not sale %}
+        <a class="btn btn-dark" href="{{ url_for('admin.create_sale', order_id=order.id) }}">Generar venta</a>
+      {% endif %}
+    {% endif %}
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.list_orders') }}">Volver</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body">
+        <h2 class="h5">Datos del pedido</h2>
+        <div class="row">
+          <div class="col-md-6">
+            <p class="mb-1"><strong>Cliente:</strong> {{ order.cliente.nombre }}</p>
+            <p class="mb-1"><strong>Telefono:</strong> {{ order.telefono_contacto }}</p>
+            <p class="mb-1"><strong>Canal:</strong> {{ order.canal.value }}</p>
+          </div>
+          <div class="col-md-6">
+            <p class="mb-1"><strong>Direccion:</strong> {{ order.direccion_entrega or '-' }}</p>
+            <p class="mb-1"><strong>Repartidor:</strong> {{ order.repartidor.nombre if order.repartidor else '-' }}</p>
+            <p class="mb-1"><strong>Observaciones:</strong> {{ order.observaciones or '-' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h5 mb-0">Detalle del pedido</h2>
+          <span class="badge text-bg-dark">Subtotal: ${{ '%.2f'|format(order_subtotal) }}</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Subtotal</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in order.detalles %}
+                <tr>
+                  <td>
+                    <div>{{ item.producto.nombre }}</div>
+                    <small class="text-muted">{{ item.extras or item.observaciones or '' }}</small>
+                  </td>
+                  <td style="width: 170px;">
+                    {% if current_user.role_name in ['administrador', 'vendedor'] and not sale and order.estado.value == 'pendiente' %}
+                      <form method="post" action="{{ url_for('admin.update_order_item', order_id=order.id, item_id=item.id) }}" class="d-flex gap-2">
+                        {{ item_update_forms[item.id].hidden_tag() }}
+                        {{ item_update_forms[item.id].cantidad(class="form-control form-control-sm") }}
+                        {{ item_update_forms[item.id].submit(class="btn btn-sm btn-outline-dark") }}
+                      </form>
+                    {% else %}
+                      {{ item.cantidad }}
+                    {% endif %}
+                  </td>
+                  <td>${{ '%.2f'|format(item.precio_unitario) }}</td>
+                  <td>${{ '%.2f'|format(item.subtotal) }}</td>
+                  <td class="text-end">
+                    {% if current_user.role_name in ['administrador', 'vendedor'] and not sale and order.estado.value == 'pendiente' %}
+                      <form method="post" action="{{ url_for('admin.remove_order_item', order_id=order.id, item_id=item.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
+                      </form>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">Aun no hay productos en este pedido.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    {% if current_user.role_name in ['administrador', 'vendedor'] and not sale and order.estado.value == 'pendiente' %}
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+          <h2 class="h5">Agregar producto</h2>
+          <form method="post" action="{{ url_for('admin.add_order_item', order_id=order.id) }}" novalidate>
+            {{ item_form.hidden_tag() }}
+            <div class="mb-3">
+              {{ item_form.producto_id.label(class="form-label") }}
+              {{ item_form.producto_id(class="form-select", **{"data-testid": "order-item-product"}) }}
+            </div>
+            <div class="mb-3">
+              {{ item_form.cantidad.label(class="form-label") }}
+              {{ item_form.cantidad(class="form-control", **{"data-testid": "order-item-quantity"}) }}
+            </div>
+            <div class="mb-3">
+              {{ item_form.extras.label(class="form-label") }}
+              {{ item_form.extras(class="form-control") }}
+            </div>
+            <div class="mb-3">
+              {{ item_form.observaciones.label(class="form-label") }}
+              {{ item_form.observaciones(class="form-control") }}
+            </div>
+            <div class="d-grid">
+              {{ item_form.submit(class="btn btn-dark", **{"data-testid": "order-item-submit"}) }}
+            </div>
+          </form>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body">
+        <h2 class="h5">Cambiar estado</h2>
+        <form method="post" action="{{ url_for('admin.change_order_status', order_id=order.id) }}">
+          {{ status_form.hidden_tag() }}
+          <div class="mb-3">
+            {{ status_form.estado.label(class="form-label") }}
+            {{ status_form.estado(class="form-select", **{"data-testid": "order-status"}) }}
+          </div>
+          <div class="d-grid">
+            {{ status_form.submit(class="btn btn-outline-dark", **{"data-testid": "order-status-submit"}) }}
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h2 class="h5">Venta</h2>
+        {% if sale %}
+          <p class="mb-1"><strong>Subtotal:</strong> ${{ '%.2f'|format(sale.subtotal) }}</p>
+          <p class="mb-1"><strong>Impuesto:</strong> ${{ '%.2f'|format(sale.impuesto) }}</p>
+          <p class="mb-1"><strong>Descuento:</strong> ${{ '%.2f'|format(sale.descuento) }}</p>
+          <p class="mb-0"><strong>Total:</strong> ${{ '%.2f'|format(sale.total) }}</p>
+        {% else %}
+          <p class="text-muted mb-0">Este pedido aun no tiene venta generada.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

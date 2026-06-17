@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Pedidos{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">{% if current_user.role_name == 'repartidor' %}Mis pedidos{% else %}Pedidos{% endif %}</h1>
+    <p class="text-muted mb-0">Seguimiento operativo de pedidos y estados.</p>
+  </div>
+  {% if current_user.role_name in ['administrador', 'vendedor'] %}
+    <a class="btn btn-dark" href="{{ url_for('admin.create_order') }}">Nuevo pedido</a>
+  {% endif %}
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Numero</th>
+          <th>Cliente</th>
+          <th>Canal</th>
+          <th>Estado</th>
+          <th>Repartidor</th>
+          <th>Venta</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td>{{ order.numero }}</td>
+            <td>{{ order.cliente.nombre }}</td>
+            <td>{{ order.canal.value }}</td>
+            <td>{{ order.estado.value }}</td>
+            <td>{{ order.repartidor.nombre if order.repartidor else '-' }}</td>
+            <td>{{ 'Generada' if order.venta else 'Pendiente' }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-dark" href="{{ url_for('admin.order_detail', order_id=order.id) }}">Ver detalle</a>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">No hay pedidos registrados.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
