@@ -19,7 +19,8 @@ RUN pip install --upgrade pip \
 
 COPY . .
 
-RUN chmod +x /app/scripts/entrypoint.sh \
+RUN sed -i 's/\r$//' /app/scripts/entrypoint.sh \
+    && chmod +x /app/scripts/entrypoint.sh \
     && chown -R appuser:appgroup /app
 
 USER appuser
