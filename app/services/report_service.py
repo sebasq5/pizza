@@ -42,7 +42,9 @@ class ReportService:
         return self.get_ventas_por_producto()
 
     def get_caja_diaria(self, date):
-        return db.session.query(Caja).filter(func.date(Caja.fecha_apertura) == date).all()
+        if isinstance(date, str):
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+        return db.session.query(Caja).filter(db.cast(Caja.fecha_apertura, db.Date) == date).all()
 
     def get_movimientos_inventario(self, ingrediente_id=None, motivo=None, fecha_inicio=None, fecha_fin=None):
         query = MovimientoInventario.query
@@ -62,7 +64,7 @@ class ReportService:
         
         # Ventas del día (total)
         ventas_hoy = db.session.query(func.sum(Venta.total)).filter(
-            func.date(Venta.fecha_venta) == today
+            db.cast(Venta.fecha_venta, db.Date) == today
         ).scalar() or 0
         
         # Pedidos pendientes

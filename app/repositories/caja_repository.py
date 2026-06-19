@@ -20,5 +20,8 @@ class CajaRepository:
         return caja
 
     def get_daily_boxes(self, date):
+        from datetime import datetime
         # Filtra cajas cuya fecha de apertura coincida con el dia
-        return Caja.query.filter(db.func.date(Caja.fecha_apertura) == date).all()
+        if isinstance(date, str):
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+        return Caja.query.filter(db.cast(Caja.fecha_apertura, db.Date) == date).all()

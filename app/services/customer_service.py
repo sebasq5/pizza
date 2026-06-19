@@ -3,11 +3,12 @@ from sqlalchemy.exc import IntegrityError
 from app.extensions import db
 from app.models import Cliente
 from app.repositories import ClienteRepository
-
+from app.services.audit_service import AuditService
 
 class CustomerService:
     def __init__(self, customer_repository: ClienteRepository | None = None) -> None:
         self.customer_repository = customer_repository or ClienteRepository()
+        self.audit_service = AuditService()
 
     def list_customers(self) -> list[Cliente]:
         return self.customer_repository.list_all()
@@ -29,7 +30,14 @@ class CustomerService:
             referencia=reference.strip() if reference else None,
         )
         try:
-            return self.customer_repository.add(customer)
+            customer = self.customer_repository.add(customer)
+            self.audit_service.log_action(
+                accion="creación cliente",
+                tabla_afectada="clientes",
+                registro_id=customer.id,
+                detalle=f"Cliente {customer.nombre} creado"
+            )
+            return customer
         except IntegrityError as exc:
             db.session.rollback()
             raise ValueError("No se pudo crear el cliente.") from exc
@@ -48,6 +56,12 @@ class CustomerService:
         customer.referencia = reference.strip() if reference else None
         try:
             self.customer_repository.save()
+            self.audit_service.log_action(
+                accion="edición cliente",
+                tabla_afectada="clientes",
+                registro_id=customer.id,
+                detalle=f"Cliente {customer.nombre} actualizado"
+            )
             return customer
         except IntegrityError as exc:
             db.session.rollback()
@@ -56,6 +70,12 @@ class CustomerService:
     def delete_customer(self, customer: Cliente) -> None:
         try:
             self.customer_repository.delete(customer)
+            self.audit_service.log_action(
+                accion="eliminación cliente",
+                tabla_afectada="clientes",
+                registro_id=customer.id,
+                detalle=f"Cliente {customer.nombre} eliminado"
+            )
         except IntegrityError as exc:
             db.session.rollback()
             raise ValueError("No se pudo eliminar el cliente.") from exc

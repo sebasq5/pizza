@@ -10,3 +10,4 @@ python-dotenv==1.1.1
 SQLAlchemy==2.0.41
 WTForms==3.2.1
 pytest==8.4.1
+Flask-Limiter==3.8.0

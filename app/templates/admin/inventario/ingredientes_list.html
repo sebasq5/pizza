@@ -1,59 +1,73 @@
 {% extends "base.html" %}
 
-{% block title %}Ingredientes{% endblock %}
+{% block title %}Ingredientes - Pizza Express{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Ingredientes</h2>
-    <a href="{{ url_for('admin.create_ingrediente') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Nuevo Ingrediente
+<div class="page-header d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="page-title d-flex align-items-center gap-2">
+            <i class="ph-fill ph-package text-primary"></i> Ingredientes
+        </h1>
+        <p class="text-muted mb-0 mt-1">Gestión de insumos y materia prima.</p>
+    </div>
+    <a href="{{ url_for('admin.create_ingrediente') }}" class="btn-premium">
+        <i class="ph ph-plus-circle"></i> Nuevo Ingrediente
     </a>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Unidad</th>
-                        <th>Stock Actual</th>
-                        <th>Stock Mínimo</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in ingredientes %}
-                    <tr>
-                        <td>{{ item.id }}</td>
-                        <td>{{ item.nombre }}</td>
-                        <td>{{ item.unidad_medida.value }}</td>
-                        <td>
-                            {% if item.stock_actual <= item.stock_minimo %}
-                                <span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle"></i> {{ item.stock_actual }}</span>
-                            {% else %}
-                                {{ item.stock_actual }}
-                            {% endif %}
-                        </td>
-                        <td>{{ item.stock_minimo }}</td>
-                        <td>
-                            {% if item.activo %}
-                            <span class="badge bg-success">Activo</span>
-                            {% else %}
-                            <span class="badge bg-secondary">Inactivo</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">No hay ingredientes registrados.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="modern-list">
+    {% for item in ingredientes %}
+    <div class="modern-row">
+        <div class="row-group" style="min-width: 250px;">
+            <div class="kpi-icon-box kpi-orange" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                <i class="ph-fill ph-plant"></i>
+            </div>
+            <div>
+                <div style="font-weight: 600; color: var(--text-main); font-size: 1.05rem;">{{ item.nombre }}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">ID #{{ item.id }} &bull; Medida en {{ item.unidad_medida.value }}</div>
+            </div>
+        </div>
+        
+        <div class="row-group d-none d-md-flex" style="flex: 1;">
+            <div class="d-flex flex-column gap-1">
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Stock Actual</div>
+                {% if item.stock_actual <= item.stock_minimo %}
+                    <span class="text-danger fw-bold d-flex align-items-center gap-1">
+                        <i class="ph-fill ph-warning"></i> {{ item.stock_actual }}
+                    </span>
+                {% else %}
+                    <span class="text-dark fw-bold">{{ item.stock_actual }}</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="row-group d-none d-lg-flex" style="flex: 1;">
+            <div class="d-flex flex-column gap-1">
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Stock Mínimo</div>
+                <span class="text-dark fw-medium">{{ item.stock_minimo }}</span>
+            </div>
+        </div>
+
+        <div class="row-group" style="min-width: 100px; justify-content: flex-end;">
+            {% if item.activo %}
+                <span class="modern-badge badge-success">Activo</span>
+            {% else %}
+                <span class="modern-badge badge-warning" style="background: var(--bg-hover); color: var(--text-muted);">Inactivo</span>
+            {% endif %}
+        </div>
+        
+        <div class="row-group ms-3">
+            <!-- Espacio reservado para acciones rápidas si hubieran, como Editar -->
+            <button class="btn btn-sm btn-light text-muted border" title="Editar"><i class="ph ph-pencil-simple"></i></button>
         </div>
     </div>
+    {% else %}
+    <div class="premium-card empty-state text-center py-5">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" viewBox="0 0 256 256" style="color: var(--text-light); margin-bottom: 1rem;"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM200,56v41.38L132.61,154a16,16,0,0,1-17.06-2.58L40,84.14V56ZM40,200V105.77l83.67,73.08a32,32,0,0,0,36-2.07L216,122.61V200Z"></path></svg>
+        <h4 class="text-dark fw-bold">No hay ingredientes registrados</h4>
+        <p class="text-muted mb-0">Agrega tu primer ingrediente al inventario para comenzar a registrar movimientos.</p>
+        <a class="btn-premium mt-4" href="{{ url_for('admin.create_ingrediente') }}">Nuevo Ingrediente</a>
+    </div>
+    {% endfor %}
 </div>
 {% endblock %}

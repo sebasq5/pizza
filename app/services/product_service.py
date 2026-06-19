@@ -81,6 +81,12 @@ class ProductService:
     def delete_product(self, product: Producto) -> None:
         try:
             self.product_repository.delete(product)
+            self.audit_service.log_action(
+                accion="eliminación producto",
+                tabla_afectada="productos",
+                registro_id=product.id,
+                detalle=f"Producto {product.nombre} eliminado"
+            )
         except IntegrityError as exc:
             db.session.rollback()
             raise ValueError("No se pudo eliminar el producto.") from exc

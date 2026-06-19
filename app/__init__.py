@@ -32,6 +32,9 @@ def register_extensions(app: Flask) -> None:
     csrf.init_app(app)
     bcrypt.init_app(app)
     login_manager.init_app(app)
+    
+    from app.extensions import limiter
+    limiter.init_app(app)
 
 
 def register_blueprints(app: Flask) -> None:

@@ -17,7 +17,10 @@ def _is_safe_redirect_target(target: str | None) -> bool:
     return redirect_url.scheme in {"http", "https"} and host_url.netloc == redirect_url.netloc
 
 
+from app.extensions import limiter
+
 @auth_bp.route("/login", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("main.dashboard"))
@@ -28,7 +31,7 @@ def login():
         user = auth_service.authenticate(form.username.data, form.password.data)
         if user is None:
             flash("Credenciales inválidas o usuario inactivo.", "danger")
-            return render_template("auth/login.html", form=form), 401
+            return redirect(url_for("auth.login"))
 
         login_user(user, remember=form.remember_me.data)
         

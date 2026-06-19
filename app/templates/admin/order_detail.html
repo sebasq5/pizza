@@ -1,91 +1,133 @@
 {% extends "base.html" %}
-{% block title %}Detalle pedido{% endblock %}
+{% block title %}Pedido #{{ order.numero }} - Pizza Rápida Express{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-start mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 animate-fade-in">
   <div>
-    <h1 class="h3 mb-1">Pedido {{ order.numero }}</h1>
-    <p class="text-muted mb-0">{{ order.cliente.nombre }} - {{ order.canal.value }} - {{ order.estado.value }}</p>
+    <h1 class="h3 mb-1 fw-bold text-white d-flex align-items-center gap-2">
+      <i class="ph-fill ph-receipt text-primary"></i> Pedido #{{ order.numero }}
+    </h1>
+    <p class="text-white-50 mb-0">Gestión de detalles y cobro.</p>
   </div>
   <div class="d-flex gap-2 flex-wrap justify-content-end">
     {% if current_user.role_name in ['administrador', 'vendedor'] %}
-      <a class="btn btn-outline-dark" href="{{ url_for('admin.edit_order', order_id=order.id) }}">Editar pedido</a>
+      <a class="btn btn-outline-light" href="{{ url_for('admin.edit_order', order_id=order.id) }}">
+        <i class="ph ph-pencil-simple me-1"></i>Editar Datos
+      </a>
       {% if not sale %}
-        <a class="btn btn-dark" href="{{ url_for('admin.create_sale', order_id=order.id) }}">Generar venta</a>
+        <a class="btn btn-primary" href="{{ url_for('admin.create_sale', order_id=order.id) }}">
+          <i class="ph ph-currency-circle-dollar me-1"></i>Generar Venta
+        </a>
       {% endif %}
     {% endif %}
-    <a class="btn btn-outline-secondary" href="{{ url_for('admin.list_orders') }}">Volver</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.list_orders') }}">
+      <i class="ph ph-arrow-left me-1"></i>Volver
+    </a>
   </div>
 </div>
 
-<div class="row g-4">
+<div class="row g-4 animate-slide-up">
+  <!-- Columna Principal: Detalle del Pedido -->
   <div class="col-lg-8">
-    <div class="card shadow-sm border-0 mb-4">
-      <div class="card-body">
-        <h2 class="h5">Datos del pedido</h2>
-        <div class="row">
+    
+    <!-- Info General Card -->
+    <div class="card mb-4 border-0" style="background: var(--bg-card); box-shadow: var(--glass-shadow);">
+      <div class="card-body p-4">
+        <h2 class="h5 mb-3 fw-bold text-white d-flex align-items-center gap-2">
+          <i class="ph-fill ph-user-circle text-primary"></i> Información del Cliente
+        </h2>
+        <div class="row g-3">
           <div class="col-md-6">
-            <p class="mb-1"><strong>Cliente:</strong> {{ order.cliente.nombre }}</p>
-            <p class="mb-1"><strong>Telefono:</strong> {{ order.telefono_contacto }}</p>
-            <p class="mb-1"><strong>Canal:</strong> {{ order.canal.value }}</p>
+            <div class="p-3 rounded bg-dark bg-opacity-25 border border-secondary border-opacity-25 h-100">
+              <p class="mb-1 text-white-50 small text-uppercase fw-semibold">Cliente</p>
+              <p class="mb-2 text-white fw-medium">{{ order.cliente.nombre }}</p>
+              
+              <p class="mb-1 text-white-50 small text-uppercase fw-semibold">Teléfono</p>
+              <p class="mb-2 text-white fw-medium"><i class="ph ph-phone text-muted me-1"></i>{{ order.telefono_contacto }}</p>
+              
+              <p class="mb-1 text-white-50 small text-uppercase fw-semibold">Canal</p>
+              <p class="mb-0"><span class="badge bg-secondary">{{ order.canal.value | capitalize }}</span></p>
+            </div>
           </div>
           <div class="col-md-6">
-            <p class="mb-1"><strong>Direccion:</strong> {{ order.direccion_entrega or '-' }}</p>
-            <p class="mb-1"><strong>Repartidor:</strong> {{ order.repartidor.nombre if order.repartidor else '-' }}</p>
-            <p class="mb-1"><strong>Observaciones:</strong> {{ order.observaciones or '-' }}</p>
+            <div class="p-3 rounded bg-dark bg-opacity-25 border border-secondary border-opacity-25 h-100">
+              <p class="mb-1 text-white-50 small text-uppercase fw-semibold">Dirección</p>
+              <p class="mb-2 text-white fw-medium"><i class="ph ph-map-pin text-muted me-1"></i>{{ order.direccion_entrega or 'No especificada' }}</p>
+              
+              <p class="mb-1 text-white-50 small text-uppercase fw-semibold">Repartidor</p>
+              <p class="mb-2 text-white fw-medium"><i class="ph ph-moped text-muted me-1"></i>{{ order.repartidor.nombre if order.repartidor else 'Ninguno asignado' }}</p>
+              
+              <p class="mb-1 text-white-50 small text-uppercase fw-semibold">Observaciones</p>
+              <p class="mb-0 text-white-50 small">{{ order.observaciones or 'Sin observaciones' }}</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="card shadow-sm border-0">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h2 class="h5 mb-0">Detalle del pedido</h2>
-          <span class="badge text-bg-dark">Subtotal: ${{ '%.2f'|format(order_subtotal) }}</span>
+    <!-- Lista de Productos (Carrito) -->
+    <div class="card border-0" style="background: var(--bg-card); box-shadow: var(--glass-shadow);">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="h5 mb-0 fw-bold text-white d-flex align-items-center gap-2">
+            <i class="ph-fill ph-shopping-cart text-primary"></i> Productos del Pedido
+          </h2>
+          <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50 px-3 py-2 fs-6">
+            Subtotal: ${{ '%.2f'|format(order_subtotal) }}
+          </span>
         </div>
-        <div class="table-responsive">
-          <table class="table align-middle">
-            <thead>
+        
+        <div class="table-responsive rounded border border-secondary border-opacity-25 bg-dark bg-opacity-10">
+          <table class="table table-borderless table-hover align-middle mb-0">
+            <thead style="background: rgba(0,0,0,0.3);">
               <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Precio</th>
-                <th>Subtotal</th>
+                <th class="text-white-50 fw-semibold py-3 px-4">Producto</th>
+                <th class="text-white-50 fw-semibold py-3">Cant.</th>
+                <th class="text-white-50 fw-semibold py-3 text-end">Precio</th>
+                <th class="text-white-50 fw-semibold py-3 text-end">Subtotal</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {% for item in order.detalles %}
-                <tr>
-                  <td>
-                    <div>{{ item.producto.nombre }}</div>
-                    <small class="text-muted">{{ item.extras or item.observaciones or '' }}</small>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td class="px-4 py-3">
+                    <div class="fw-bold text-white">{{ item.producto.nombre }}</div>
+                    {% if item.extras or item.observaciones %}
+                      <div class="text-muted small mt-1"><i class="ph ph-info me-1"></i>{{ item.extras or item.observaciones or '' }}</div>
+                    {% endif %}
                   </td>
-                  <td style="width: 170px;">
+                  <td style="width: 150px;">
                     {% if current_user.role_name in ['administrador', 'vendedor'] and not sale and order.estado.value == 'pendiente' %}
                       <form method="post" action="{{ url_for('admin.update_order_item', order_id=order.id, item_id=item.id) }}" class="d-flex gap-2">
                         {{ item_update_forms[item.id].hidden_tag() }}
-                        {{ item_update_forms[item.id].cantidad(class="form-control form-control-sm") }}
-                        {{ item_update_forms[item.id].submit(class="btn btn-sm btn-outline-dark") }}
+                        {{ item_update_forms[item.id].cantidad(class="form-control form-control-sm bg-transparent text-white border-secondary", style="width: 60px; text-align: center;") }}
+                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="Actualizar">
+                          <i class="ph ph-check"></i>
+                        </button>
                       </form>
                     {% else %}
-                      {{ item.cantidad }}
+                      <span class="badge bg-secondary">{{ item.cantidad }}</span>
                     {% endif %}
                   </td>
-                  <td>${{ '%.2f'|format(item.precio_unitario) }}</td>
-                  <td>${{ '%.2f'|format(item.subtotal) }}</td>
-                  <td class="text-end">
+                  <td class="text-end text-white-50">${{ '%.2f'|format(item.precio_unitario) }}</td>
+                  <td class="text-end fw-bold text-success">${{ '%.2f'|format(item.subtotal) }}</td>
+                  <td class="text-end px-4">
                     {% if current_user.role_name in ['administrador', 'vendedor'] and not sale and order.estado.value == 'pendiente' %}
                       <form method="post" action="{{ url_for('admin.remove_order_item', order_id=order.id, item_id=item.id) }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
+                        <button class="btn btn-sm btn-outline-danger border-0" type="submit" title="Eliminar">
+                          <i class="ph ph-trash"></i>
+                        </button>
                       </form>
                     {% endif %}
                   </td>
                 </tr>
               {% else %}
                 <tr>
-                  <td colspan="5" class="text-center text-muted py-4">Aun no hay productos en este pedido.</td>
+                  <td colspan="5" class="text-center py-5">
+                    <i class="ph-fill ph-empty text-muted opacity-50 mb-2" style="font-size: 3rem;"></i>
+                    <p class="text-white-50 mb-0">Aún no hay productos en este pedido.</p>
+                  </td>
                 </tr>
               {% endfor %}
             </tbody>
@@ -95,63 +137,93 @@
     </div>
   </div>
 
+  <!-- Columna Lateral: Acciones POS -->
   <div class="col-lg-4">
     {% if current_user.role_name in ['administrador', 'vendedor'] and not sale and order.estado.value == 'pendiente' %}
-      <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body">
-          <h2 class="h5">Agregar producto</h2>
+      <div class="card mb-4 border-primary border-opacity-50" style="background: var(--bg-card); box-shadow: 0 0 20px rgba(255, 90, 31, 0.1);">
+        <div class="card-header border-bottom border-secondary border-opacity-25 bg-transparent py-3">
+          <h2 class="h5 mb-0 fw-bold text-white d-flex align-items-center gap-2">
+            <i class="ph-fill ph-plus-circle text-primary"></i> Agregar Producto
+          </h2>
+        </div>
+        <div class="card-body p-4">
           <form method="post" action="{{ url_for('admin.add_order_item', order_id=order.id) }}" novalidate>
             {{ item_form.hidden_tag() }}
             <div class="mb-3">
-              {{ item_form.producto_id.label(class="form-label") }}
-              {{ item_form.producto_id(class="form-select", **{"data-testid": "order-item-product"}) }}
+              {{ item_form.producto_id.label(class="form-label text-white-50 small fw-semibold") }}
+              {{ item_form.producto_id(class="form-select bg-dark text-white border-secondary", **{"data-testid": "order-item-product"}) }}
             </div>
             <div class="mb-3">
-              {{ item_form.cantidad.label(class="form-label") }}
-              {{ item_form.cantidad(class="form-control", **{"data-testid": "order-item-quantity"}) }}
+              {{ item_form.cantidad.label(class="form-label text-white-50 small fw-semibold") }}
+              {{ item_form.cantidad(class="form-control bg-dark text-white border-secondary", **{"data-testid": "order-item-quantity"}) }}
             </div>
             <div class="mb-3">
-              {{ item_form.extras.label(class="form-label") }}
-              {{ item_form.extras(class="form-control") }}
+              {{ item_form.extras.label(class="form-label text-white-50 small fw-semibold") }}
+              {{ item_form.extras(class="form-control bg-dark text-white border-secondary", placeholder="Ej: Sin cebolla") }}
             </div>
-            <div class="mb-3">
-              {{ item_form.observaciones.label(class="form-label") }}
-              {{ item_form.observaciones(class="form-control") }}
+            <div class="mb-4">
+              {{ item_form.observaciones.label(class="form-label text-white-50 small fw-semibold") }}
+              {{ item_form.observaciones(class="form-control bg-dark text-white border-secondary") }}
             </div>
             <div class="d-grid">
-              {{ item_form.submit(class="btn btn-dark", **{"data-testid": "order-item-submit"}) }}
+              <button type="submit" class="btn btn-primary fw-bold" data-testid="order-item-submit">
+                <i class="ph ph-plus me-1"></i>Añadir al pedido
+              </button>
             </div>
           </form>
         </div>
       </div>
     {% endif %}
 
-    <div class="card shadow-sm border-0 mb-4">
-      <div class="card-body">
-        <h2 class="h5">Cambiar estado</h2>
+    <div class="card mb-4 border-0" style="background: var(--bg-card); box-shadow: var(--glass-shadow);">
+      <div class="card-body p-4">
+        <h2 class="h5 mb-3 fw-bold text-white d-flex align-items-center gap-2">
+          <i class="ph-fill ph-arrows-clockwise text-primary"></i> Estado del Pedido
+        </h2>
         <form method="post" action="{{ url_for('admin.change_order_status', order_id=order.id) }}">
           {{ status_form.hidden_tag() }}
           <div class="mb-3">
-            {{ status_form.estado.label(class="form-label") }}
-            {{ status_form.estado(class="form-select", **{"data-testid": "order-status"}) }}
+            {{ status_form.estado.label(class="form-label text-white-50 small fw-semibold") }}
+            {{ status_form.estado(class="form-select bg-dark text-white border-secondary", **{"data-testid": "order-status"}) }}
           </div>
           <div class="d-grid">
-            {{ status_form.submit(class="btn btn-outline-dark", **{"data-testid": "order-status-submit"}) }}
+            <button type="submit" class="btn btn-outline-light" data-testid="order-status-submit">
+              Actualizar Estado
+            </button>
           </div>
         </form>
       </div>
     </div>
 
-    <div class="card shadow-sm border-0">
-      <div class="card-body">
-        <h2 class="h5">Venta</h2>
+    <div class="card border-0" style="background: var(--bg-card); box-shadow: var(--glass-shadow);">
+      <div class="card-body p-4">
+        <h2 class="h5 mb-3 fw-bold text-white d-flex align-items-center gap-2">
+          <i class="ph-fill ph-receipt text-success"></i> Resumen de Venta
+        </h2>
         {% if sale %}
-          <p class="mb-1"><strong>Subtotal:</strong> ${{ '%.2f'|format(sale.subtotal) }}</p>
-          <p class="mb-1"><strong>Impuesto:</strong> ${{ '%.2f'|format(sale.impuesto) }}</p>
-          <p class="mb-1"><strong>Descuento:</strong> ${{ '%.2f'|format(sale.descuento) }}</p>
-          <p class="mb-0"><strong>Total:</strong> ${{ '%.2f'|format(sale.total) }}</p>
+          <div class="bg-dark bg-opacity-50 rounded p-3 border border-secondary border-opacity-25">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-white-50">Subtotal:</span>
+              <span class="text-white fw-medium">${{ '%.2f'|format(sale.subtotal) }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-white-50">Impuesto:</span>
+              <span class="text-white fw-medium">${{ '%.2f'|format(sale.impuesto) }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-3 pb-3 border-bottom border-secondary border-opacity-25">
+              <span class="text-white-50">Descuento:</span>
+              <span class="text-danger fw-medium">-${{ '%.2f'|format(sale.descuento) }}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-white fw-bold text-uppercase fs-5">Total:</span>
+              <span class="text-success fw-bold fs-3">${{ '%.2f'|format(sale.total) }}</span>
+            </div>
+          </div>
         {% else %}
-          <p class="text-muted mb-0">Este pedido aun no tiene venta generada.</p>
+          <div class="text-center py-4 bg-dark bg-opacity-25 rounded border border-warning border-opacity-25">
+            <i class="ph ph-warning-circle text-warning fs-2 mb-2"></i>
+            <p class="text-warning mb-0 small">Este pedido aún no tiene venta generada.</p>
+          </div>
         {% endif %}
       </div>
     </div>

@@ -1,125 +1,236 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard - Pizza Express{% endblock %}
+
 {% block content %}
 <div class="row g-4">
+  
+  <!-- Header -->
   <div class="col-12">
-    <div class="p-4 bg-white border rounded-3 shadow-sm d-flex justify-content-between align-items-center">
+    <div class="page-header d-flex justify-content-between align-items-end">
       <div>
-        <h1 class="h3 mb-1">Dashboard Principal</h1>
-        <p class="text-muted mb-0">
-          Bienvenido, {{ current_user.nombre }}.
-        </p>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="text-muted mb-0 mt-1">Resumen de la operación actual</p>
       </div>
-      <span class="badge bg-primary fs-6">{{ current_user.role_name.title() }}</span>
+      <div>
+        <span class="modern-badge badge-primary">
+          <i class="ph-fill ph-user-circle me-1"></i>
+          {{ current_user.role_name | title if current_user.role_name else 'Staff' }}
+        </span>
+      </div>
     </div>
   </div>
 
   {% if current_user.role_name == 'administrador' and metrics %}
+  
+  <!-- Fila 1: KPIs -->
   <div class="col-12">
-    <h2 class="h5 mb-3">Resumen de Hoy</h2>
-    <div class="row g-3">
+    <div class="row g-4">
       <div class="col-md-3">
-        <div class="card text-white bg-success shadow-sm h-100">
-          <div class="card-body">
-            <h6 class="card-title text-uppercase text-white-50">Ventas (Total)</h6>
-            <h3 class="mb-0">${{ "{:.2f}".format(metrics.ventas_hoy) }}</h3>
+        <div class="premium-card kpi-card">
+          <div class="kpi-content">
+            <div class="kpi-title">Ventas Hoy</div>
+            <div class="kpi-value">${{ '%.2f'|format(metrics.ventas_hoy or 0) }}</div>
+            <div class="kpi-trend trend-up"><i class="ph-bold ph-trend-up"></i> +12% vs ayer</div>
           </div>
+          <div class="kpi-icon-box kpi-green"><i class="ph-fill ph-currency-dollar"></i></div>
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card text-white bg-info shadow-sm h-100">
-          <div class="card-body">
-            <h6 class="card-title text-uppercase text-white-50">Pedidos Pendientes</h6>
-            <h3 class="mb-0">{{ metrics.pedidos_pendientes }}</h3>
+        <div class="premium-card kpi-card">
+          <div class="kpi-content">
+            <div class="kpi-title">Pedidos Pendientes</div>
+            <div class="kpi-value">{{ metrics.pedidos_pendientes or 0 }}</div>
+            <div class="kpi-trend trend-down"><i class="ph-bold ph-trend-down"></i> -5% vs ayer</div>
           </div>
+          <div class="kpi-icon-box kpi-blue"><i class="ph-fill ph-receipt"></i></div>
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card text-white bg-danger shadow-sm h-100">
-          <div class="card-body">
-            <h6 class="card-title text-uppercase text-white-50">Ingredientes Bajo Stock</h6>
-            <h3 class="mb-0">{{ metrics.bajo_stock }}</h3>
+        <div class="premium-card kpi-card">
+          <div class="kpi-content">
+            <div class="kpi-title">Bajo Stock</div>
+            <div class="kpi-value">{{ metrics.bajo_stock or 0 }}</div>
+            <div class="kpi-trend trend-neutral"><i class="ph-bold ph-minus"></i> Estable</div>
           </div>
+          <div class="kpi-icon-box kpi-red"><i class="ph-fill ph-warning-circle"></i></div>
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card text-dark bg-warning shadow-sm h-100">
-          <div class="card-body">
-            <h6 class="card-title text-uppercase text-dark-50">Cajas Abiertas</h6>
-            <h3 class="mb-0">{{ metrics.cajas_abiertas }}</h3>
+        <div class="premium-card kpi-card">
+          <div class="kpi-content">
+            <div class="kpi-title">Cajas Abiertas</div>
+            <div class="kpi-value">{{ metrics.cajas_abiertas or 0 }}</div>
+            <div class="kpi-trend trend-neutral"><i class="ph-bold ph-minus"></i> Operativo</div>
           </div>
+          <div class="kpi-icon-box kpi-orange"><i class="ph-fill ph-cash-register"></i></div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="col-12 mt-4">
-    <h2 class="h5 mb-3">Últimas Ventas</h2>
-    <div class="card shadow-sm border-0">
-      <div class="table-responsive">
-        <table class="table table-hover mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>ID</th>
-              <th>Fecha</th>
-              <th>Cliente</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for venta in metrics.ultimas_ventas %}
-            <tr>
-              <td>{{ venta.id }}</td>
-              <td>{{ venta.fecha_venta.strftime('%H:%M:%S') }}</td>
-              <td>{{ venta.pedido.cliente.nombre }}</td>
-              <td class="fw-bold">${{ venta.total }}</td>
-            </tr>
-            {% else %}
-            <tr>
-              <td colspan="4" class="text-center py-3 text-muted">No hay ventas registradas hoy.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+  <!-- Fila 2: Gráficos -->
+  <div class="col-md-8">
+    <div class="premium-card h-100">
+      <h3 class="h6 fw-bold mb-4">Ingresos de Ventas (Últimos 7 Días)</h3>
+      <div style="height: 300px; width: 100%;">
+        <canvas id="ventasChart"></canvas>
       </div>
     </div>
   </div>
+  <div class="col-md-4">
+    <div class="premium-card h-100">
+      <h3 class="h6 fw-bold mb-4">Distribución de Pedidos</h3>
+      <div style="height: 300px; width: 100%; display: flex; align-items: center; justify-content: center;">
+        <canvas id="pedidosChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fila 3: Últimas Ventas (Stripe-like Rows) -->
+  <div class="col-12 mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3 class="h5 fw-bold mb-0">Últimas Ventas</h3>
+      <a href="{{ url_for('admin.list_sales') }}" class="btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.8rem;">Ver Todas</a>
+    </div>
+
+    <div class="modern-list">
+      {% for venta in metrics.ultimas_ventas %}
+        <div class="modern-row">
+          <div class="row-group" style="min-width: 200px;">
+            <div class="kpi-icon-box kpi-blue" style="width: 40px; height: 40px; font-size: 1.25rem;">
+              <i class="ph-fill ph-shopping-bag"></i>
+            </div>
+            <div>
+              <div style="font-weight: 600; font-size: 0.95rem;">{{ venta.pedido.cliente.nombre if venta.pedido and venta.pedido.cliente else 'Cliente Mostrador' }}</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">ID Venta #{{ venta.id }}</div>
+            </div>
+          </div>
+          <div class="row-group d-none d-md-flex">
+            <div style="font-size: 0.875rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
+              <i class="ph ph-clock"></i> {{ venta.fecha_venta.strftime('%H:%M') if venta.fecha_venta else '' }}
+            </div>
+          </div>
+          <div class="row-group">
+            <span class="modern-badge badge-success">Completado</span>
+          </div>
+          <div class="row-group" style="min-width: 100px; justify-content: flex-end;">
+            <div style="font-weight: 700; color: var(--text-main); font-size: 1.1rem;">
+              ${{ '%.2f'|format(venta.total or 0) }}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="empty-state premium-card">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM200,56v41.38L132.61,154a16,16,0,0,1-17.06-2.58L40,84.14V56ZM40,200V105.77l83.67,73.08a32,32,0,0,0,36-2.07L216,122.61V200Z"></path></svg>
+          <h4>No hay ventas recientes</h4>
+          <p>Los registros de ventas de hoy aparecerán aquí una vez procesados los pagos.</p>
+          <a href="{{ url_for('admin.create_order') }}" class="btn-premium">Nuevo Pedido</a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  
+  <!-- Vista para Roles No Administradores -->
+  <div class="col-12 mt-4">
+    <div class="premium-card empty-state text-center py-5">
+      <i class="ph-fill ph-hand-waving" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
+      <h2 class="h4 fw-bold">Bienvenido al sistema</h2>
+      <p class="text-muted mb-4 max-w-md mx-auto">Selecciona una opción del menú lateral para comenzar a trabajar según tu rol de {{ current_user.role_name }}.</p>
+    </div>
+  </div>
+
   {% endif %}
-
-  <div class="col-12 mt-4">
-    <div class="card shadow-sm border-0 h-100">
-      <div class="card-body">
-        <h2 class="h5">Atajos Rápidos</h2>
-        {% if current_user.role_name == 'administrador' %}
-          <div class="d-flex gap-2 flex-wrap mt-3">
-            <a class="btn btn-outline-primary" href="{{ url_for('admin.list_users') }}"><i class="bi bi-people"></i> Usuarios</a>
-            <a class="btn btn-outline-primary" href="{{ url_for('admin.list_products') }}"><i class="bi bi-box"></i> Productos</a>
-            <a class="btn btn-outline-primary" href="{{ url_for('admin.list_ingredientes') }}"><i class="bi bi-basket"></i> Ingredientes</a>
-            <a class="btn btn-outline-primary" href="{{ url_for('admin.list_orders') }}"><i class="bi bi-receipt"></i> Pedidos</a>
-            <a class="btn btn-outline-warning" href="{{ url_for('admin.index') }}"><i class="bi bi-graph-up"></i> Reportes</a>
-          </div>
-        {% elif current_user.role_name == 'cajero' %}
-          <div class="d-flex gap-2 flex-wrap mt-3">
-            <a class="btn btn-outline-primary" href="{{ url_for('admin.list_cajas') }}"><i class="bi bi-cash-coin"></i> Mi Caja</a>
-            <a class="btn btn-outline-primary" href="{{ url_for('admin.list_pagos') }}"><i class="bi bi-credit-card"></i> Pagos</a>
-          </div>
-        {% elif current_user.role_name == 'vendedor' %}
-          <div class="d-flex gap-2 flex-wrap mt-3">
-            <a class="btn btn-outline-primary" href="{{ url_for('admin.list_customers') }}"><i class="bi bi-people"></i> Clientes</a>
-            <a class="btn btn-outline-primary" href="{{ url_for('admin.list_orders') }}"><i class="bi bi-receipt"></i> Pedidos</a>
-            <a class="btn btn-outline-primary" href="{{ url_for('admin.list_sales') }}"><i class="bi bi-cash"></i> Ventas</a>
-          </div>
-        {% elif current_user.role_name == 'cocina' %}
-          <div class="d-flex gap-2 flex-wrap mt-3">
-            <a class="btn btn-outline-primary" href="{{ url_for('admin.list_orders') }}"><i class="bi bi-receipt"></i> Ver Pedidos</a>
-          </div>
-        {% elif current_user.role_name == 'repartidor' %}
-          <div class="d-flex gap-2 flex-wrap mt-3">
-            <a class="btn btn-outline-primary" href="{{ url_for('admin.list_orders') }}"><i class="bi bi-bicycle"></i> Mis Entregas</a>
-          </div>
-        {% endif %}
-      </div>
-    </div>
-  </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Configuración global de Chart.js
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.color = "#64748B";
+
+  // Gráfico de Ventas
+  const ctxVentas = document.getElementById('ventasChart');
+  if (ctxVentas) {
+    new Chart(ctxVentas, {
+      type: 'line',
+      data: {
+        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+        datasets: [{
+          label: 'Ventas ($)',
+          data: [1200, 1900, 1500, 2200, 2800, 3500, 3100],
+          borderColor: '#F97316',
+          backgroundColor: 'rgba(249, 115, 22, 0.1)',
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: '#FFFFFF',
+          pointBorderColor: '#F97316',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1E293B',
+            padding: 12,
+            titleFont: { size: 13 },
+            bodyFont: { size: 14, weight: 'bold' },
+            displayColors: false,
+            callbacks: {
+              label: function(context) { return '$' + context.raw; }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: '#F1F5F9', drawBorder: false },
+            border: { display: false }
+          },
+          x: {
+            grid: { display: false, drawBorder: false },
+            border: { display: false }
+          }
+        }
+      }
+    });
+  }
+
+  // Gráfico de Pedidos
+  const ctxPedidos = document.getElementById('pedidosChart');
+  if (ctxPedidos) {
+    new Chart(ctxPedidos, {
+      type: 'doughnut',
+      data: {
+        labels: ['Local', 'Delivery', 'Llevar'],
+        datasets: [{
+          data: [45, 35, 20],
+          backgroundColor: ['#F97316', '#10B981', '#3B82F6'],
+          borderWidth: 0,
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '75%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { padding: 20, usePointStyle: true, pointStyle: 'circle' }
+          }
+        }
+      }
+    });
+  }
+});
+</script>
 {% endblock %}

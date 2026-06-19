@@ -1,50 +1,84 @@
 {% extends "base.html" %}
-{% block title %}Pedidos{% endblock %}
+{% block title %}Pedidos - Pizza Express{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header d-flex justify-content-between align-items-end mb-4">
   <div>
-    <h1 class="h3 mb-1">{% if current_user.role_name == 'repartidor' %}Mis pedidos{% else %}Pedidos{% endif %}</h1>
-    <p class="text-muted mb-0">Seguimiento operativo de pedidos y estados.</p>
+    <h1 class="page-title d-flex align-items-center gap-2">
+      <i class="ph-fill ph-receipt text-primary"></i>
+      {% if current_user.role_name == 'repartidor' %}Mis pedidos{% elif current_user.role_name == 'cocina' %}KDS - Cocina{% else %}Gestión de Pedidos{% endif %}
+    </h1>
+    <p class="text-muted mb-0 mt-1">Seguimiento operativo en tiempo real.</p>
   </div>
   {% if current_user.role_name in ['administrador', 'vendedor'] %}
-    <a class="btn btn-dark" href="{{ url_for('admin.create_order') }}">Nuevo pedido</a>
+    <a class="btn-premium" href="{{ url_for('admin.create_order') }}">
+      <i class="ph ph-plus-circle"></i> Nuevo pedido
+    </a>
   {% endif %}
 </div>
 
-<div class="card shadow-sm border-0">
-  <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
-      <thead class="table-light">
-        <tr>
-          <th>Numero</th>
-          <th>Cliente</th>
-          <th>Canal</th>
-          <th>Estado</th>
-          <th>Repartidor</th>
-          <th>Venta</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for order in orders %}
-          <tr>
-            <td>{{ order.numero }}</td>
-            <td>{{ order.cliente.nombre }}</td>
-            <td>{{ order.canal.value }}</td>
-            <td>{{ order.estado.value }}</td>
-            <td>{{ order.repartidor.nombre if order.repartidor else '-' }}</td>
-            <td>{{ 'Generada' if order.venta else 'Pendiente' }}</td>
-            <td class="text-end">
-              <a class="btn btn-sm btn-outline-dark" href="{{ url_for('admin.order_detail', order_id=order.id) }}">Ver detalle</a>
-            </td>
-          </tr>
-        {% else %}
-          <tr>
-            <td colspan="7" class="text-center text-muted py-4">No hay pedidos registrados.</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+<div class="row g-4">
+  {% for order in orders %}
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+      <div class="premium-card h-100 d-flex flex-column p-0" style="overflow: hidden;">
+        
+        <!-- Estado Color Header -->
+        {% set status_color = 'secondary' %}
+        {% if order.estado.value == 'pendiente' %}{% set status_color = 'warning' %}
+        {% elif order.estado.value == 'preparando' %}{% set status_color = 'primary' %}
+        {% elif order.estado.value == 'listo' %}{% set status_color = 'success' %}
+        {% elif order.estado.value == 'entregado' %}{% set status_color = 'success' %}
+        {% elif order.estado.value == 'anulado' %}{% set status_color = 'danger' %}{% endif %}
+        
+        <div class="d-flex justify-content-between align-items-center px-4 py-3 bg-{{ status_color }} bg-opacity-10 border-bottom">
+          <span class="fw-bold font-monospace fs-5 text-{{ status_color }}">#{{ order.numero }}</span>
+          <span class="modern-badge badge-{{ status_color }}">{{ order.estado.value }}</span>
+        </div>
+        
+        <div class="p-4 flex-grow-1">
+          <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2" style="font-size: 1.1rem;">
+            <i class="ph-fill ph-user-circle text-muted" style="font-size: 1.5rem;"></i> {{ order.cliente.nombre }}
+          </h5>
+          
+          <div class="d-flex flex-column gap-2 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-muted small d-flex align-items-center gap-1"><i class="ph ph-storefront"></i> Canal</span>
+              <span class="text-dark fw-medium" style="font-size: 0.9rem;">{{ order.canal.value | capitalize }}</span>
+            </div>
+            {% if order.repartidor %}
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-muted small d-flex align-items-center gap-1"><i class="ph ph-moped"></i> Repartidor</span>
+              <span class="text-dark fw-medium" style="font-size: 0.9rem;">{{ order.repartidor.nombre }}</span>
+            </div>
+            {% endif %}
+            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+              <span class="text-muted small d-flex align-items-center gap-1"><i class="ph ph-currency-circle-dollar"></i> Venta</span>
+              {% if order.venta %}
+                <span class="modern-badge badge-success">Generada</span>
+              {% else %}
+                <span class="modern-badge badge-warning">Pendiente</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <div class="px-4 pb-4">
+          <a class="btn-secondary w-100 d-flex justify-content-center align-items-center gap-2" href="{{ url_for('admin.order_detail', order_id=order.id) }}">
+            <span>Abrir Detalle</span> <i class="ph ph-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="col-12">
+      <div class="premium-card empty-state text-center py-5">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" viewBox="0 0 256 256" style="color: var(--text-light); margin-bottom: 1rem;"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM200,56v41.38L132.61,154a16,16,0,0,1-17.06-2.58L40,84.14V56ZM40,200V105.77l83.67,73.08a32,32,0,0,0,36-2.07L216,122.61V200Z"></path></svg>
+        <h4 class="text-dark fw-bold">No hay pedidos activos</h4>
+        <p class="text-muted mb-0">{% if current_user.role_name in ['administrador', 'vendedor'] %}Aún no hay órdenes en proceso.{% else %}A la espera de nuevas órdenes.{% endif %}</p>
+        {% if current_user.role_name in ['administrador', 'vendedor'] %}
+        <a class="btn-premium mt-4" href="{{ url_for('admin.create_order') }}">Crear Primer Pedido</a>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
 </div>
 {% endblock %}

@@ -101,6 +101,12 @@ class UserService:
             raise ValueError("No puedes eliminar tu propia cuenta activa.")
         try:
             self.user_repository.delete(user)
+            self.audit_service.log_action(
+                accion="eliminación de usuario",
+                tabla_afectada="usuarios",
+                registro_id=user.id,
+                detalle=f"Usuario {user.usuario} eliminado"
+            )
         except IntegrityError as exc:
             db.session.rollback()
             raise ValueError("No se pudo eliminar el usuario.") from exc
