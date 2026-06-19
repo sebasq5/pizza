@@ -16,8 +16,8 @@ def seed_demo_data() -> str:
         roles_map[role_name.value] = role
     db.session.commit()
 
-    # 2. Crear Usuarios (Contraseña uniforme: Demo123!)
-    demo_password = bcrypt.generate_password_hash("Demo123!").decode("utf-8")
+    # 2. Crear Usuarios (Contraseña uniforme: P1zz@S3cur3!2026)
+    demo_password = bcrypt.generate_password_hash("P1zz@S3cur3!2026").decode("utf-8")
     
     usuarios_demo = [
         {"nombre": "Admin Demo", "usuario": "admin", "rol": roles_map["administrador"]},

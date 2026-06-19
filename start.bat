@@ -16,6 +16,6 @@ echo ==============================================
 echo ¡TODO LISTO! 
 echo Abre tu navegador en: http://localhost:5000
 echo Usuario: admin
-echo Clave:   Demo123!
+echo Clave:   P1zz@S3cur3!2026
 echo ==============================================
 pause

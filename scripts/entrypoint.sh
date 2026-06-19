@@ -7,7 +7,7 @@ do
   sleep 2
 done
 
-# flask db upgrade
+flask db upgrade
 
 flask seed
 

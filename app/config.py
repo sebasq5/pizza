@@ -29,7 +29,7 @@ class BaseConfig:
     REMEMBER_COOKIE_SECURE = SESSION_COOKIE_SECURE
     PERMANENT_SESSION_LIFETIME = 3600
     ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
-    ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "ChangeMe123!")
+    ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "P1zz@S3cur3!2026")
     ADMIN_FULL_NAME = os.getenv("ADMIN_FULL_NAME", "Administrador General")
     BCRYPT_LOG_ROUNDS = int(os.getenv("BCRYPT_LOG_ROUNDS", "12"))
 

@@ -42,7 +42,7 @@ El sistema puede ser instalado de dos maneras: usando Docker (Recomendado para p
    ```
 
 5. **Acceso:**  
-   Ingresa a `http://localhost:5000` con el usuario `admin` y contraseña `Demo123!`.
+   Ingresa a `http://localhost:5000` con el usuario `admin` y contraseña `P1zz@S3cur3!2026`.
 
 ---
 
