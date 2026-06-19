@@ -18,3 +18,9 @@
 *.png binary
 *.jpg binary
 *.pdf binary
+
+# Excluir del ZIP (git archive export-ignore)
+INFORME_PENTESTING.md export-ignore
+test_sprint2.py export-ignore
+tests/ export-ignore
+.coverage export-ignore
